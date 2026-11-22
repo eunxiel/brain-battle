@@ -1,0 +1,57 @@
+# BRAIN BATTLE — project notes
+
+Real-time multiplayer brain-training game. npm workspaces monorepo.
+
+## Layout
+
+| Path               | Purpose                                                                 |
+| ------------------ | ----------------------------------------------------------------------- |
+| `packages/shared`  | Types, socket event contracts, seeded RNG, scoring, mini-game definitions |
+| `apps/server`      | Express + Socket.IO, authoritative match engine, Postgres/file store      |
+| `apps/web`         | React + Vite + Tailwind v4 + Framer Motion client                         |
+
+## Commands
+
+```bash
+npm install            # root, installs all workspaces
+npm run dev            # server (:4000) + web (:5173) together
+npm run dev:server
+npm run dev:web
+npm run build          # production web build
+npm run typecheck      # all workspaces
+npm run smoke --workspace @brain-battle/server   # headless 2-client integration test
+```
+
+The smoke test needs the dev server running on :4000. It plays a full Versus
+match, a full Co-op match and a Daily Challenge run over real sockets, and
+asserts that no mini-game payload ever leaks its own solution to the client.
+
+## Database
+
+Postgres is used when `DATABASE_URL` is set (schema auto-applies from
+`apps/server/src/db/schema.sql`). Without it — or if the connection fails — the
+server falls back to a JSON file store in `apps/server/.data/` so the game stays
+fully playable. Both implement the same `Store` interface in `apps/server/src/db/types.ts`.
+
+Copy `.env.example` to `.env` to configure `PORT`, `CLIENT_ORIGIN`, `DATABASE_URL`
+and `SESSION_SECRET`.
+
+## Architecture rules
+
+- **The server is authoritative.** Clients never compute scores and never receive
+  a solution before a round closes. `MiniGameDefinition.viewFor()` masks every
+  payload per seat; `evaluate()` runs only on the server.
+- **Adding mini-game #6..#31**: write one `MiniGameDefinition` in
+  `packages/shared/src/minigames/`, register it in `registry.ts`, add one React
+  renderer in `apps/web/src/minigames/` and register it in `index.ts`. No engine,
+  networking or UI shell changes required.
+- Player identity is a localStorage id **plus an HMAC token** issued by the
+  server, so a client cannot claim another player's profile or leaderboard rows.
+- Co-op is not Versus with different copy: games use `coopStyle`
+  (`split` / `mirror` / `shared`) to hand each seat half the information.
+
+## Testing two players locally
+
+Open the app in two browser profiles (or a phone on the same Wi-Fi via the
+network URL Vite prints). The client auto-targets the server on
+`<current-host>:4000`, so LAN play works with no configuration.
