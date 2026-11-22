@@ -171,7 +171,11 @@ function PlayerSlotCard({
 
   if (!player) {
     return (
-      <Card padding="lg" className="border-dashed !border-mist-deep bg-white/60 text-center">
+      <Card
+        padding="lg"
+        tone="none"
+        className="border-dashed !border-mist-deep bg-white/60 text-center"
+      >
         <div className="mx-auto grid h-[68px] w-[68px] place-items-center rounded-[28%] border-2 border-dashed border-mist-deep bg-mist">
           <Icon name="user" size={28} className="text-ink-faint" />
         </div>

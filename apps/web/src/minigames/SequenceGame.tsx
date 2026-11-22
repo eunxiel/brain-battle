@@ -34,7 +34,7 @@ export function SequenceGame({ view, submit, locked, accent, mode }: MiniGamePro
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             className={clsx(
-              'grid h-16 min-w-16 place-items-center rounded-[20px] border-2 px-3 font-display text-2xl font-bold shadow-soft sm:h-20 sm:min-w-20 sm:text-3xl',
+              'grid h-14 min-w-14 place-items-center rounded-[18px] border-2 px-2.5 font-display text-xl font-bold shadow-soft sm:h-20 sm:min-w-20 sm:rounded-[20px] sm:px-3 sm:text-3xl',
               cell.isHole
                 ? 'border-dashed bg-white'
                 : cell.hidden

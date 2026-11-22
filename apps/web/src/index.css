@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* A phone held in landscape has plenty of width but almost no height, so the
+   width-based `sm:` scale makes layouts *bigger* exactly where there is no
+   room. `short:` is the escape hatch: compact the arena chrome instead. */
+@custom-variant short (@media (max-height: 520px));
+
 /* ===========================================================================
    BRAIN BATTLE — DESIGN SYSTEM
    Playful & colourful: pastel canvas, bold accents, chunky tactile controls.

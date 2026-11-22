@@ -5,7 +5,12 @@ import { Icon, type IconName } from './Icon';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
-  tone?: 'solid' | 'tinted';
+  /**
+   * Use `none` when the caller supplies its own background. Passing `bg-*`
+   * alongside the default `bg-white` is a silent bug: Tailwind resolves the
+   * conflict by stylesheet order, not by class order, so the override loses.
+   */
+  tone?: 'solid' | 'tinted' | 'none';
   children?: ReactNode;
 }
 
@@ -14,7 +19,8 @@ export function Card({ padding = 'md', tone = 'solid', className, children, ...r
     <div
       className={clsx(
         'rounded-card border-2 border-white shadow-card',
-        tone === 'solid' ? 'bg-white' : 'bg-white/70 backdrop-blur-sm',
+        tone === 'solid' && 'bg-white',
+        tone === 'tinted' && 'bg-white/70 backdrop-blur-sm',
         padding === 'sm' && 'p-4',
         padding === 'md' && 'p-5 sm:p-6',
         padding === 'lg' && 'p-6 sm:p-8',

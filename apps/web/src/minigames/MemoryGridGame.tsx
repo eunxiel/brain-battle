@@ -94,7 +94,7 @@ export function MemoryGridGame({ view, submit, locked, accent, mode }: MiniGameP
 
       {/* Grid */}
       <div
-        className={clsx('grid w-full max-w-[min(78vw,420px)]', gapClass)}
+        className={clsx('grid w-full max-w-[min(78vw,44vh,420px)]', gapClass)}
         style={{ gridTemplateColumns: `repeat(${view.size}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: cells }, (_, tile) => {

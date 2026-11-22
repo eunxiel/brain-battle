@@ -70,6 +70,7 @@ export function HomePage() {
         <section className="grid gap-5 lg:grid-cols-[1.12fr_0.88fr]">
           <Card
             padding="lg"
+            tone="none"
             className="relative overflow-hidden !border-violet-deep/20 bg-violet text-white"
           >
             <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10" />
@@ -200,7 +201,7 @@ export function HomePage() {
               title="Today's leaderboard"
               action={
                 <button
-                  className="flex items-center gap-1 text-xs font-bold text-violet"
+                  className="-my-2 -mr-2 flex items-center gap-1 rounded-full px-2 py-2 text-xs font-bold text-violet"
                   onClick={() => {
                     play('click');
                     navigate('/leaderboard');

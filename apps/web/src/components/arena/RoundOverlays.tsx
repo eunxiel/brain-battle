@@ -63,31 +63,33 @@ export function RoundIntro({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-      className="grid flex-1 place-items-center px-2"
+      className="grid min-h-0 flex-1 place-items-center px-2"
     >
       <div className="w-full max-w-md text-center">
         <motion.div
-          className="mx-auto grid h-24 w-24 place-items-center rounded-[30px] text-white"
+          className="mx-auto grid h-24 w-24 place-items-center rounded-[30px] text-white short:h-14 short:w-14 short:rounded-[20px]"
           style={{ background: accent.hex, boxShadow: `0 10px 0 0 ${accent.deep}` }}
           animate={{ rotate: [0, -6, 6, 0], y: [0, -6, 0] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <Icon name={meta.icon} size={46} strokeWidth={2} />
+          <Icon name={meta.icon} size={46} strokeWidth={2} className="short:h-7 short:w-7" />
         </motion.div>
 
         <div
-          className="mx-auto mt-5 w-fit rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em]"
+          className="mx-auto mt-5 w-fit rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] short:mt-2"
           style={{ background: accent.soft, color: accent.deep }}
         >
           {meta.category} · difficulty {Math.round(meta.difficulty)}/10
         </div>
 
-        <h2 className="mt-3 font-display text-4xl font-bold text-ink">{meta.title}</h2>
-        <p className="mx-auto mt-3 max-w-sm text-[15px] font-medium leading-relaxed text-ink-soft">
+        <h2 className="mt-3 font-display text-4xl font-bold text-ink short:mt-1.5 short:text-2xl">
+          {meta.title}
+        </h2>
+        <p className="mx-auto mt-3 max-w-sm text-[15px] font-medium leading-relaxed text-ink-soft short:mt-1.5 short:text-[13px] short:leading-snug">
           {instruction}
         </p>
 
-        <div className="mx-auto mt-7 flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 shadow-card">
+        <div className="mx-auto mt-7 flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 shadow-card short:mt-3 short:py-1.5">
           <Icon name="clock" size={16} className="text-violet" />
           <span className="font-display text-sm font-bold text-ink">
             Starting in {Math.max(1, Math.ceil(remaining / 1000))}…

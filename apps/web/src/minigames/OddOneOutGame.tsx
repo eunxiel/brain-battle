@@ -61,7 +61,7 @@ export function OddOneOutGame({ view, submit, locked, accent, mode }: MiniGamePr
       )}
 
       <div
-        className="grid w-full max-w-[min(82vw,460px)] gap-2.5"
+        className="grid w-full max-w-[min(82vw,46vh,460px)] gap-2.5"
         style={{ gridTemplateColumns: `repeat(${view.columns}, minmax(0, 1fr))` }}
       >
         {view.tiles.map((tile, index) => {

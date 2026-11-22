@@ -166,7 +166,7 @@ export function LeaderboardPage() {
 
         {myEntry && myEntry.rank > 3 && (
           <div className="sticky bottom-3">
-            <Card padding="sm" className="!border-violet/30 bg-violet-soft">
+            <Card padding="sm" tone="none" className="!border-violet/30 bg-violet-soft">
               <Row entry={myEntry} me />
             </Card>
           </div>

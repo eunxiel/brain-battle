@@ -84,8 +84,8 @@ export function ArenaPage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pt-4">
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-3">
+    <div className="flex h-dvh flex-col px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col gap-2 sm:gap-3">
         <ArenaHud
           round={snapshot?.roundIndex ?? 0}
           totalRounds={snapshot?.totalRounds ?? TOTAL_ROUNDS}
@@ -99,7 +99,7 @@ export function ArenaPage() {
         />
 
         {/* Scoreboard */}
-        <div className={solo ? '' : 'grid grid-cols-2 gap-2.5'}>
+        <div className={solo ? 'mx-auto w-full max-w-sm' : 'grid grid-cols-2 gap-2.5'}>
           <PlayerStrip
             player={me}
             state={myState}
@@ -121,16 +121,16 @@ export function ArenaPage() {
         </div>
 
         {matchMode === 'coop' && snapshot?.teamScore !== null && snapshot?.teamScore !== undefined && (
-          <div className="flex items-center justify-center gap-2 rounded-2xl bg-mint px-4 py-2 text-white shadow-soft">
-            <Icon name="handshake" size={16} />
+          <div className="flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-mint px-4 py-1.5 text-white shadow-soft">
+            <Icon name="handshake" size={15} />
             <span className="font-display text-sm font-bold">
               Team score {snapshot.teamScore.toLocaleString()}
             </span>
           </div>
         )}
 
-        {/* Stage */}
-        <div className="relative flex flex-1 flex-col">
+        {/* Stage — min-h-0 lets it shrink instead of pushing the HUD off screen */}
+        <div className="relative flex min-h-0 flex-1 flex-col">
           <AnimatePresence mode="wait">
             {phase === 'countdown' && (
               <motion.div key="countdown" className="flex flex-1 flex-col" exit={{ opacity: 0 }}>
@@ -148,10 +148,12 @@ export function ArenaPage() {
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="relative flex flex-1 flex-col"
+                className="relative flex min-h-0 flex-1 flex-col"
               >
-                {/* Mini-game header */}
-                <div className="mb-3 flex items-center gap-3 rounded-[22px] border-2 border-white bg-white px-4 py-3 shadow-soft">
+                {/* Mini-game header. Hidden on very short screens (phone in
+                    landscape): the same instruction was just shown in the intro,
+                    so the playfield wins the space. */}
+                <div className="mb-2 flex items-center gap-3 rounded-[22px] border-2 border-white bg-white px-4 py-2.5 shadow-soft sm:mb-3 short:hidden">
                   <div
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-white"
                     style={{ background: accent.hex }}
@@ -170,7 +172,7 @@ export function ArenaPage() {
 
                 {/* Interactive area */}
                 <div
-                  className="relative flex flex-1 items-center justify-center rounded-[28px] border-2 border-white p-4 shadow-card sm:p-6"
+                  className="relative flex min-h-0 flex-1 items-center justify-center overflow-y-auto overflow-x-hidden rounded-[28px] border-2 border-white p-3 shadow-card sm:p-6"
                   style={{ background: `linear-gradient(180deg, #fff 0%, ${accent.soft} 160%)` }}
                 >
                   <Renderer

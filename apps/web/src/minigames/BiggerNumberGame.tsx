@@ -34,7 +34,7 @@ export function BiggerNumberGame({
       )}
 
       <div
-        className="grid w-full max-w-[min(86vw,540px)] gap-3"
+        className="grid w-full max-w-[min(86vw,74vh,540px)] gap-2.5 sm:gap-3"
         style={{ gridTemplateColumns: `repeat(${view.columns}, minmax(0, 1fr))` }}
       >
         {view.cards.map((card, index) => {
