@@ -14,15 +14,18 @@ services:
     plan: free
     # Closest region to the players; a brain game is unplayable on 300ms RTT.
     region: singapore
-    buildCommand: npm ci
+    # --include=dev because the client build needs Vite, which is a dev
+    # dependency; NODE_ENV=production would otherwise skip it. Nothing from it
+    # survives into the running service, which starts from `dist`.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
-      # Switches CORS from "reflect any origin" to the CLIENT_ORIGIN allowlist.
       - key: NODE_ENV
         value: production
-      # Comma separated. Must include the exact client origin, scheme and all,
-      # e.g. https://brain-battle-rust.vercel.app
+      # Optional. The client is served from this same service, so same-origin
+      # requests are allowed without naming them. Only set this if you also
+      # host the client somewhere else, e.g. https://your-app.vercel.app
       - key: CLIENT_ORIGIN
         sync: false
       # Signs the HMAC player tokens. Generated once and kept, so tokens issued

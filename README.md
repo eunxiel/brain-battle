@@ -83,29 +83,32 @@ schema applies itself on boot.
 
 ## Deployment
 
-The two halves deploy separately, and **the client is useless without the
-server**: it is a static build, while the match engine holds per-match state in
-memory and keeps WebSockets open for the length of a match. That rules out
-serverless hosting for `apps/server`.
+**One service, one URL.** After `npm run build`, the server also serves
+`apps/web/dist`, so the interface and the match engine share an origin:
 
-**1. Server** — `render.yaml` is a ready blueprint (Render → New → Blueprint).
-Any host that runs a persistent Node process works just as well. Set:
+```bash
+npm run build && npm start      # http://localhost:4000 — the whole game
+```
 
-| Variable | Value |
+Nothing has to be told where anything else is. The client talks to its own
+origin, so there is no `VITE_SERVER_URL` to bake in and no `CLIENT_ORIGIN`
+allowlist to keep in sync.
+
+`render.yaml` is a ready blueprint for exactly this (Render → New → Blueprint);
+any host that runs a persistent Node process works the same way. Static hosts
+(Vercel, GitHub Pages, Netlify) can host the client but **cannot** host the
+engine: it holds per-match state in memory and keeps WebSockets open for the
+length of a match, which serverless and static hosting cannot do.
+
+| Variable | |
 | --- | --- |
-| `NODE_ENV` | `production` — switches CORS to the allowlist |
-| `CLIENT_ORIGIN` | the exact client origin, e.g. `https://your-app.vercel.app` |
-| `SESSION_SECRET` | any long random string, kept stable across restarts |
-| `DATABASE_URL` | optional; without it data resets whenever the host restarts |
+| `SESSION_SECRET` | sign HMAC player tokens; keep it stable or every player is logged out on restart |
+| `DATABASE_URL` | optional; without it, data resets whenever the host restarts |
+| `CLIENT_ORIGIN` | **only** for split hosting — the origin of a separately hosted client |
+| `VITE_SERVER_URL` | **only** for split hosting — baked in at build time, so changing it needs a rebuild |
 
-**2. Client** — set `VITE_SERVER_URL` to the deployed server URL
-(`https://brain-battle-server.onrender.com`) and rebuild. Vite inlines env vars
-at build time, so changing it requires a redeploy, not just a restart.
-
-Without `VITE_SERVER_URL` the client falls back to `<page host>:4000`. That is
-correct for local and LAN play and wrong everywhere else, so off a local
-hostname the app now says it is misconfigured instead of retrying a port its own
-host does not serve.
+Splitting the two across different hosts still works, but it is the harder
+path: both variables above must then agree exactly, down to the trailing slash.
 
 ---
 

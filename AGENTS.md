@@ -55,16 +55,19 @@ and `SESSION_SECRET`.
 
 ## Deployment
 
-The halves ship separately: Vercel (`https://brain-battle-rust.vercel.app`)
-serves **only** `apps/web`, and `apps/server` needs a persistent Node process
-(`render.yaml` blueprint) because the engine holds match state in memory and
-keeps WebSockets open — serverless cannot host it.
+**Ship it as one service.** `npm run build && npm start` makes the server serve
+`apps/web/dist` alongside the socket, so client and engine share an origin and
+there is nothing to configure — no `VITE_SERVER_URL`, no `CLIENT_ORIGIN`.
+`render.yaml` deploys exactly that.
 
-The client must be built with `VITE_SERVER_URL` pointing at the deployed server;
-Vite inlines it at build time, so changing it needs a redeploy. Without it the
-client only guesses `<page host>:4000`, which is correct for local/LAN and
-nothing else. The server needs `CLIENT_ORIGIN` to match the client origin
-exactly, plus `NODE_ENV=production` for that allowlist to apply at all.
+The engine needs a persistent Node process: it holds match state in memory and
+keeps WebSockets open. Static/serverless hosts (Vercel, GitHub Pages) can serve
+the client but can never run the engine — that mismatch is what left the old
+Vercel-only deploy stuck forever on the boot screen.
+
+Split hosting is still supported but is the harder path: `VITE_SERVER_URL`
+(baked in at build time) and `CLIENT_ORIGIN` must then agree exactly, trailing
+slash included, and `NODE_ENV=production` is what activates the allowlist.
 
 ## Architecture rules
 

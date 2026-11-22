@@ -4,7 +4,7 @@ import { Button } from '../design/Button';
 import { Icon } from '../design/Icon';
 import { Logo } from '../design/Shell';
 import { useSessionStore } from '../store/session';
-import { serverUrl, serverUrlError, socket } from '../net/socket';
+import { serverUrl, socket } from '../net/socket';
 
 const TILES = ['grid', 'numbers', 'shapes', 'bar', 'sequence'];
 
@@ -75,12 +75,9 @@ export function BootScreen() {
               <Button icon="refresh" onClick={() => window.location.reload()}>
                 Reload page
               </Button>
-              {/* Retrying a build that has nowhere to connect is just theatre. */}
-              {!serverUrlError && (
-                <Button variant="outline" icon="link" onClick={retry}>
-                  Retry connection
-                </Button>
-              )}
+              <Button variant="outline" icon="link" onClick={retry}>
+                Retry connection
+              </Button>
             </div>
           </>
         )}

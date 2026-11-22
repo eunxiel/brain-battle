@@ -14,7 +14,7 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { attachGameListeners, useGameStore } from './store/game';
 import { useSessionStore } from './store/session';
-import { serverUrl, serverUrlError, socket } from './net/socket';
+import { serverUrl, socket } from './net/socket';
 
 let listenersAttached = false;
 
@@ -27,13 +27,6 @@ function NetworkBridge() {
   const setOffline = useSessionStore((s) => s.setOffline);
 
   useEffect(() => {
-    // Misconfigured build: there is nothing to connect to, so retrying would
-    // only spin. Report it once and stop.
-    if (serverUrlError) {
-      setOffline(serverUrlError);
-      return;
-    }
-
     if (!listenersAttached) {
       attachGameListeners();
       listenersAttached = true;
@@ -44,7 +37,14 @@ function NetworkBridge() {
       void hello();
     };
     const onDisconnect = (): void => setStatus('reconnecting');
-    const onError = (): void => setOffline(`Could not reach the game server at ${serverUrl}.`);
+    // A free host that has gone to sleep answers nothing until it wakes, which
+    // looks identical to a client deployed without its server. Name both.
+    const onError = (): void =>
+      setOffline(
+        `Could not reach the game server at ${serverUrl}. ` +
+          `If it is asleep it can take a minute to wake; if this page was deployed ` +
+          `as static files only, no server is running behind it.`,
+      );
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
