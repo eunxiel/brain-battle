@@ -60,10 +60,45 @@ and `SESSION_SECRET`.
 there is nothing to configure — no `VITE_SERVER_URL`, no `CLIENT_ORIGIN`.
 `render.yaml` deploys exactly that.
 
-The engine needs a persistent Node process: it holds match state in memory and
-keeps WebSockets open. Static/serverless hosts (Vercel, GitHub Pages) can serve
-the client but can never run the engine — that mismatch is what left the old
-Vercel-only deploy stuck forever on the boot screen.
+The engine needs a long-lived Node process: it holds match state in memory and
+keeps WebSockets open. A *static* host (GitHub Pages, or Vercel's default SPA
+build) can serve the client but never runs the engine — that mismatch is what
+left the old Vercel-only deploy stuck on the boot screen, with `/socket.io/`
+returning 404 because nothing was listening behind it.
+
+### Vercel (single project, container runtime)
+
+`Dockerfile` + `vercel.json` (`"framework": "container"`) deploy the same
+one-service setup as a Vercel container Function: Vercel builds the image and
+routes all traffic to it, so client, REST and the Socket.IO upgrade share an
+origin and no client-side URL needs configuring. The image runs
+`node --import tsx apps/server/src/index.ts` so node is PID 1 and receives the
+`SIGTERM` Vercel sends on scale-down. `ENV PORT=80` matches the port Vercel
+routes to by default.
+
+Required environment variables — both are *optional* on a persistent host and
+*mandatory* here:
+
+- `SESSION_SECRET` — without it `loadSessionSecret()` mints a random secret per
+  process and writes it to `.data`, which is ephemeral and per-instance on
+  Vercel. Every new instance would then reject every existing player token and
+  silently log players out of their profiles.
+- `DATABASE_URL` — `createStore()` degrades to the file store *silently* when
+  Postgres is missing or unreachable, and that store is ephemeral and
+  per-instance here. Profiles, leaderboards and XP would quietly diverge.
+
+Known limits of this target, none of which apply to a persistent host:
+
+- Vercel does not guarantee two WebSocket connections reach the same instance,
+  and rooms/matches/matchmaking live in heap `Map`s. A room split across two
+  instances fails with `ROOM_NOT_FOUND`. Unlikely at low traffic — one instance
+  serves many connections — but the window is real during cold starts and
+  deploys. Fixing it properly needs Redis room-ownership forwarding.
+- A connection is cut at the function max duration: 300s on Hobby (default and
+  maximum), 800s on Pro. A full match is `3200 + 12 × (4800 + roundMs)` ms,
+  roughly 3–5 minutes, so long matches can exceed the Hobby ceiling.
+- Instances scale to zero after 5 minutes idle, so the first visitor after a
+  quiet spell pays a cold start.
 
 Split hosting is still supported but is the harder path: `VITE_SERVER_URL`
 (baked in at build time) and `CLIENT_ORIGIN` must then agree exactly, trailing
