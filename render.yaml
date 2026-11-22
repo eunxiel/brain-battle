@@ -1,0 +1,37 @@
+# Render blueprint for the BRAIN BATTLE match engine.
+#
+# The client is hosted separately as a static build (Vercel); this service is
+# the authoritative Socket.IO server it talks to. A serverless platform cannot
+# host it: the engine keeps per-match state in memory and holds WebSockets open
+# for the length of a match, so it needs a persistent process.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+# Then set the two `sync: false` values below in the dashboard.
+services:
+  - type: web
+    name: brain-battle-server
+    runtime: node
+    plan: free
+    # Closest region to the players; a brain game is unplayable on 300ms RTT.
+    region: singapore
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # Switches CORS from "reflect any origin" to the CLIENT_ORIGIN allowlist.
+      - key: NODE_ENV
+        value: production
+      # Comma separated. Must include the exact client origin, scheme and all,
+      # e.g. https://brain-battle-rust.vercel.app
+      - key: CLIENT_ORIGIN
+        sync: false
+      # Signs the HMAC player tokens. Generated once and kept, so tokens issued
+      # before a restart stay valid — a random secret per boot would silently
+      # log every player out of their profile.
+      - key: SESSION_SECRET
+        generateValue: true
+      # Optional. Without it the server uses its JSON file store, which on this
+      # plan lives on an ephemeral disk: profiles and leaderboards reset on
+      # every restart and deploy. Point it at a managed Postgres to keep them.
+      - key: DATABASE_URL
+        sync: false

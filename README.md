@@ -81,6 +81,34 @@ schema applies itself on boot.
 
 ---
 
+## Deployment
+
+The two halves deploy separately, and **the client is useless without the
+server**: it is a static build, while the match engine holds per-match state in
+memory and keeps WebSockets open for the length of a match. That rules out
+serverless hosting for `apps/server`.
+
+**1. Server** — `render.yaml` is a ready blueprint (Render → New → Blueprint).
+Any host that runs a persistent Node process works just as well. Set:
+
+| Variable | Value |
+| --- | --- |
+| `NODE_ENV` | `production` — switches CORS to the allowlist |
+| `CLIENT_ORIGIN` | the exact client origin, e.g. `https://your-app.vercel.app` |
+| `SESSION_SECRET` | any long random string, kept stable across restarts |
+| `DATABASE_URL` | optional; without it data resets whenever the host restarts |
+
+**2. Client** — set `VITE_SERVER_URL` to the deployed server URL
+(`https://brain-battle-server.onrender.com`) and rebuild. Vite inlines env vars
+at build time, so changing it requires a redeploy, not just a restart.
+
+Without `VITE_SERVER_URL` the client falls back to `<page host>:4000`. That is
+correct for local and LAN play and wrong everywhere else, so off a local
+hostname the app now says it is misconfigured instead of retrying a port its own
+host does not serve.
+
+---
+
 ## Architecture
 
 ```
