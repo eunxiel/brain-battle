@@ -10,6 +10,23 @@ Real-time multiplayer brain-training game. npm workspaces monorepo.
 | `apps/server`      | Express + Socket.IO, authoritative match engine, Postgres/file store      |
 | `apps/web`         | React + Vite + Tailwind v4 + Framer Motion client                         |
 
+## Working preferences
+
+**Auto-push is enabled.** The user does not want to ask for commits. After every
+self-contained change, commit and push to `origin main` without being prompted.
+
+Guard rails that make this safe:
+
+1. Run `npm run typecheck` (and `npm run build` when web code changed) **before**
+   pushing — the repo is public, so never auto-push code that does not compile.
+2. One logical change per commit; explain *why* in the body, not *what*.
+3. Re-check `git diff --cached --name-only` for `node_modules/`, `dist/`, `.env`,
+   `apps/server/.data/` (contains `session.secret` and player data) before every
+   commit. These are gitignored, but verify rather than trust.
+4. Never auto-push force updates, history rewrites, or branch deletions.
+
+Remote: `https://github.com/eunxiel/brain-battle` (public, default branch `main`).
+
 ## Commands
 
 ```bash
