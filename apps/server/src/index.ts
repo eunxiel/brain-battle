@@ -34,6 +34,19 @@ async function main(): Promise<void> {
   const httpServer = createServer(app);
   const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
     cors: { origin: config.isProduction ? config.clientOrigins : true, credentials: true },
+    // `cors` alone is not an allowlist. Browsers do not apply the same-origin
+    // policy to WebSocket upgrades, so it only ever shielded the long-polling
+    // transport — and the client asks for `websocket` first. Without this check
+    // any page on the internet could drive a visitor's browser into our match
+    // engine. An absent Origin is a non-browser client (smoke test, uptime
+    // probe); those can forge the header anyway, so there is nothing to gain by
+    // refusing them.
+    allowRequest: (req, done) => {
+      const origin = req.headers.origin;
+      const allowed =
+        !config.isProduction || !origin || config.clientOrigins.includes(origin);
+      done(allowed ? null : 'origin not allowed', allowed);
+    },
     pingTimeout: 20_000,
     pingInterval: 10_000,
   });
