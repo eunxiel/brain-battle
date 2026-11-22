@@ -14,7 +14,7 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { attachGameListeners, useGameStore } from './store/game';
 import { useSessionStore } from './store/session';
-import { socket } from './net/socket';
+import { serverUrl, serverUrlError, socket } from './net/socket';
 
 let listenersAttached = false;
 
@@ -24,8 +24,16 @@ function NetworkBridge() {
   const location = useLocation();
   const hello = useSessionStore((s) => s.hello);
   const setStatus = useSessionStore((s) => s.setStatus);
+  const setOffline = useSessionStore((s) => s.setOffline);
 
   useEffect(() => {
+    // Misconfigured build: there is nothing to connect to, so retrying would
+    // only spin. Report it once and stop.
+    if (serverUrlError) {
+      setOffline(serverUrlError);
+      return;
+    }
+
     if (!listenersAttached) {
       attachGameListeners();
       listenersAttached = true;
@@ -36,7 +44,7 @@ function NetworkBridge() {
       void hello();
     };
     const onDisconnect = (): void => setStatus('reconnecting');
-    const onError = (): void => setStatus('offline');
+    const onError = (): void => setOffline(`Could not reach the game server at ${serverUrl}.`);
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -51,7 +59,7 @@ function NetworkBridge() {
       socket.off('disconnect', onDisconnect);
       socket.off('connect_error', onError);
     };
-  }, [hello, setStatus]);
+  }, [hello, setStatus, setOffline]);
 
   const matchId = useGameStore((s) => s.matchId);
   const result = useGameStore((s) => s.result);

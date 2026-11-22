@@ -4,7 +4,7 @@ import { Button } from '../design/Button';
 import { Icon } from '../design/Icon';
 import { Logo } from '../design/Shell';
 import { useSessionStore } from '../store/session';
-import { socket } from '../net/socket';
+import { serverUrl, serverUrlError, socket } from '../net/socket';
 
 const TILES = ['grid', 'numbers', 'shapes', 'bar', 'sequence'];
 
@@ -67,17 +67,20 @@ export function BootScreen() {
 
         {offline && (
           <>
-            <p className="mt-2 max-w-xs text-sm text-ink-faint">
+            <p className="mt-2 max-w-sm text-sm text-ink-faint">
               {error ??
-                'The handshake with the game server did not finish. Check that the server is running, then reload.'}
+                `The handshake with the game server at ${serverUrl} did not finish. Check that it is running, then reload.`}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Button icon="refresh" onClick={() => window.location.reload()}>
                 Reload page
               </Button>
-              <Button variant="outline" icon="link" onClick={retry}>
-                Retry connection
-              </Button>
+              {/* Retrying a build that has nowhere to connect is just theatre. */}
+              {!serverUrlError && (
+                <Button variant="outline" icon="link" onClick={retry}>
+                  Retry connection
+                </Button>
+              )}
             </div>
           </>
         )}

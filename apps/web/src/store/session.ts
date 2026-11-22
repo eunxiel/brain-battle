@@ -21,6 +21,8 @@ interface SessionState {
   daily: DailyChallengeState | null;
   error: string | null;
   setStatus: (status: ConnectionStatus) => void;
+  /** Offline *with* a reason — a bare status leaves the player guessing. */
+  setOffline: (message: string) => void;
   setProfile: (profile: PlayerProfile) => void;
   hello: () => Promise<void>;
   refreshBundle: () => Promise<void>;
@@ -35,6 +37,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   error: null,
 
   setStatus: (status) => set({ status }),
+  setOffline: (message) => set({ status: 'offline', error: message }),
   setProfile: (profile) => set({ profile }),
 
   hello: async () => {
