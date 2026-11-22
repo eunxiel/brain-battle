@@ -53,6 +53,19 @@ fully playable. Both implement the same `Store` interface in `apps/server/src/db
 Copy `.env.example` to `.env` to configure `PORT`, `CLIENT_ORIGIN`, `DATABASE_URL`
 and `SESSION_SECRET`.
 
+## Deployment
+
+The halves ship separately: Vercel (`https://brain-battle-rust.vercel.app`)
+serves **only** `apps/web`, and `apps/server` needs a persistent Node process
+(`render.yaml` blueprint) because the engine holds match state in memory and
+keeps WebSockets open — serverless cannot host it.
+
+The client must be built with `VITE_SERVER_URL` pointing at the deployed server;
+Vite inlines it at build time, so changing it needs a redeploy. Without it the
+client only guesses `<page host>:4000`, which is correct for local/LAN and
+nothing else. The server needs `CLIENT_ORIGIN` to match the client origin
+exactly, plus `NODE_ENV=production` for that allowlist to apply at all.
+
 ## Architecture rules
 
 - **The server is authoritative.** Clients never compute scores and never receive
