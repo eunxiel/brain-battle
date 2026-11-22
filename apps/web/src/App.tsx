@@ -41,7 +41,10 @@ function NetworkBridge() {
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('connect_error', onError);
-    if (!socket.connected) socket.connect();
+    // If the socket connected before these listeners were attached (StrictMode
+    // remounts, hot reloads), the connect event is already gone — run it now.
+    if (socket.connected) onConnect();
+    else socket.connect();
 
     return () => {
       socket.off('connect', onConnect);

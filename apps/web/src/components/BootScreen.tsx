@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../design/Button';
 import { Icon } from '../design/Icon';
@@ -7,10 +8,29 @@ import { socket } from '../net/socket';
 
 const TILES = ['grid', 'numbers', 'shapes', 'bar', 'sequence'];
 
+/** No handshake should ever take this long on a local network. */
+const STALL_MS = 8000;
+
 export function BootScreen() {
   const status = useSessionStore((s) => s.status);
   const error = useSessionStore((s) => s.error);
-  const offline = status === 'offline';
+  const [stalled, setStalled] = useState(false);
+
+  // Last-resort escape hatch: never trap the player on a spinner.
+  useEffect(() => {
+    const timer = setTimeout(() => setStalled(true), STALL_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const retry = (): void => {
+    const session = useSessionStore.getState();
+    session.setStatus('connecting');
+    setStalled(false);
+    if (socket.connected) void session.hello();
+    else socket.connect();
+  };
+
+  const offline = status === 'offline' || stalled;
 
   return (
     <div className="grid min-h-dvh place-items-center px-6">
@@ -48,19 +68,17 @@ export function BootScreen() {
         {offline && (
           <>
             <p className="mt-2 max-w-xs text-sm text-ink-faint">
-              {error ?? 'The game server is not responding.'} Make sure the server is running, then
-              try again.
+              {error ??
+                'The handshake with the game server did not finish. Check that the server is running, then reload.'}
             </p>
-            <Button
-              className="mt-5"
-              icon="refresh"
-              onClick={() => {
-                useSessionStore.getState().setStatus('connecting');
-                socket.connect();
-              }}
-            >
-              Retry connection
-            </Button>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <Button icon="refresh" onClick={() => window.location.reload()}>
+                Reload page
+              </Button>
+              <Button variant="outline" icon="link" onClick={retry}>
+                Retry connection
+              </Button>
+            </div>
           </>
         )}
       </div>

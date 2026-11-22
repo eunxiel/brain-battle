@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type {
+  Ack,
   DailyChallengeState,
   HelloResult,
   MatchHistoryEntry,
@@ -37,10 +38,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setProfile: (profile) => set({ profile }),
 
   hello: async () => {
-    const res = await request<HelloResult>('session:hello', {
-      playerId: localStorage.getItem(ID_KEY),
-      token: localStorage.getItem(TOKEN_KEY),
-    });
+    // A throw in here must never leave the app on the boot screen forever.
+    let res: Ack<HelloResult>;
+    try {
+      res = await request<HelloResult>('session:hello', {
+        playerId: localStorage.getItem(ID_KEY),
+        token: localStorage.getItem(TOKEN_KEY),
+      });
+    } catch (error) {
+      set({ status: 'offline', error: (error as Error).message });
+      return;
+    }
     if (!res.ok) {
       set({ status: 'offline', error: res.message });
       return;
